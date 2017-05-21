@@ -10,10 +10,10 @@
 // const unsigned MAX_RECORD_NUM = 10000;
 
 typedef unsigned int KeyType;
+const KeyType MAX_DATA_NUM = 255;
 
 namespace Database
 {
-
     class LinkRecord
     {
         friend class LinkData;
@@ -25,6 +25,7 @@ namespace Database
             : keys(data), next(nextVal) { }
         // methods
         std::vector<KeyType> getData() const { return keys; }
+        KeyType getData(int n) const { return keys[n]; }
         int getNext() const { return next; }
         const LinkRecord &print() const;
         LinkRecord &print();
@@ -56,6 +57,9 @@ namespace Database
         // methods
         int getKeyNum() const { return keynum; }
         int getRecNum() const { return recnum; }
+        std::vector<LinkRecord> getData() const { return records; }
+        int getHead() const { return head; }
+        int getTail() const { return tail; }
         LinkData &add(std::vector<KeyType>);
         LinkData &setKeyNum(int);
         LinkData &setHead(unsigned);
@@ -106,7 +110,7 @@ namespace Database
     {
         if (recnum == 0)
             return *this;
-        for (int i = head; i != -1; i = records[i].next){
+        for (int i = head; i != -1; i = records[i].getNext()){
             records[i].print();
             std::cout << "\n";
         }
@@ -117,7 +121,7 @@ namespace Database
     {
         if (recnum == 0)
             return *this;
-        for (int i = head; i != -1; i = records[i].next){
+        for (int i = head; i != -1; i = records[i].getNext()){
             records[i].print();
             std::cout << "\n";
         }

@@ -9,7 +9,7 @@ void TestGen()
 {
     Database::LinkData data;
     data.setKeyNum(5);
-    for (int i = 0; i != 1000; i++) {
+    for (int i = 0; i != 4; i++) {
         auto temp = RandomGen::randUnsgnIntVec(1, 256, 5);
         data.add(temp);
     }
