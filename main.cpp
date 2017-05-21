@@ -3,9 +3,12 @@
 #include <iostream>
 #include <ctime>
 
-void TestGen()
+void TestAll()
 {
-    std::cout << "5 Keys, 10000 test records with integer values in range [1, " << MAX_DATA_NUM << "]\n";
+    std::string range;
+    std::cin >> range;
+    std::cout << "Your input: " << range << std::endl;
+    std::cout << "5 Keys, 10000 test records with integer values in range [1, " << range << "]\n";
     Database::LinkData data;
     data.setKeyNum(5);
     for (int i = 0; i != 10000; i++) {
@@ -26,6 +29,6 @@ void TestGen()
 
 int main()
 {
-    TestGen();
+    TestAll();
     return 0;
 }
