@@ -10,13 +10,15 @@
 // const unsigned MAX_RECORD_NUM = 10000;
 
 typedef unsigned int KeyType;
-const KeyType MAX_DATA_NUM = 255;
+const KeyType MAX_DATA_NUM = 256;
+const KeyType NUM_BASE = 10;
+const int EMPTY_TAIL = -1;
 
 namespace Database
 {
     class LinkRecord
     {
-        friend class LinkData;
+        //friend class LinkData;
     public:
         // constructors
         LinkRecord() = default;
@@ -27,6 +29,7 @@ namespace Database
         std::vector<KeyType> getData() const { return keys; }
         KeyType getData(int n) const { return keys[n]; }
         int getNext() const { return next; }
+        LinkRecord &setNext(unsigned pos) { next = pos; return *this; }
         const LinkRecord &print() const;
         LinkRecord &print();
     private:
@@ -63,6 +66,7 @@ namespace Database
         LinkData &add(std::vector<KeyType>);
         LinkData &setKeyNum(int);
         LinkData &setHead(unsigned);
+        LinkData &setNext(unsigned, unsigned);
         const LinkData &print() const;
         LinkData &print();
         LinkData &mergeSort();
@@ -74,7 +78,7 @@ namespace Database
         unsigned keynum = 0;               // number of keys
         unsigned recnum = 0;               // number of records
         int head = -1;
-        int tail = -1;
+        int tail = EMPTY_TAIL;
     };
 
     inline LinkData &LinkData::setKeyNum(int num)
@@ -93,6 +97,12 @@ namespace Database
         return *this;
     }
 
+    inline LinkData &LinkData::setNext(unsigned i, unsigned pos)
+    {
+        records[i].setNext(pos);
+        return *this;
+    }
+
     inline LinkData &LinkData::add(std::vector<KeyType> data)
     {
         if (data.size() != keynum)
@@ -100,8 +110,10 @@ namespace Database
         records.push_back(LinkRecord(data));
         if (head == -1)
             head = tail = 0;
-        else
-            tail = records[tail].next = recnum;
+        else {
+            records[tail].setNext(recnum);
+            tail = recnum;
+        }
         recnum++;
         return *this;
     }
@@ -110,7 +122,7 @@ namespace Database
     {
         if (recnum == 0)
             return *this;
-        for (int i = head; i != -1; i = records[i].getNext()){
+        for (int i = head; i != EMPTY_TAIL; i = records[i].getNext()){
             records[i].print();
             std::cout << "\n";
         }
@@ -121,7 +133,7 @@ namespace Database
     {
         if (recnum == 0)
             return *this;
-        for (int i = head; i != -1; i = records[i].getNext()){
+        for (int i = head; i != EMPTY_TAIL; i = records[i].getNext()){
             records[i].print();
             std::cout << "\n";
         }
