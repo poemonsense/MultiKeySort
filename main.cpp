@@ -10,35 +10,36 @@ void printSplitForPy()
 
 void RunAll()
 {
-    int keynum, recnum;
-    // std::cout << "Size of test cases: ";
-    std::cin >> keynum >> recnum;
-    // std::cout << "We will randomly generate the test cases";
+    int func, keynum, recnum;
+    std::cin >> func >> keynum >> recnum;
     Database::LinkData data;
     data.setKeyNum(keynum);
-    for (int i = 0; i != recnum; i++) {
-        auto temp = RandomGen::randUnsgnIntVec(1, MAX_DATA_NUM, 5);
-        data.add(temp);
+    if (func == 0){
+        for (int i = 0; i != recnum; i++) {
+            auto temp = RandomGen::randUnsgnIntVec(1, MAX_DATA_NUM, 5);
+            data.add(temp);
+        }
     }
-    // std::cout << "Generated test cases: \n";
-    data.print();
-    // std::cout << "Running radix sort...\n";
-    printSplitForPy();
+    if (func == 0){
+        data.print();
+        printSplitForPy();
+    }
     clock_t a = clock(), b;
     data.radixSort();
     b = clock();
-    data.print();
-    // std::cout << "Radix sort run time: " << (double)(b - a) / CLOCKS_PER_SEC << "s\n";
-    printSplitForPy();
+    if (func == 0){
+        data.print();
+        printSplitForPy();
+    }
     std::cout << (double)(b - a) / CLOCKS_PER_SEC;
     printSplitForPy();
-    // std::cout << "Running merge sort...\n";
     clock_t c = clock(), d;
     data.mergeSort();
     d = clock();
-    data.print();
-    // std::cout << "In-place merge sort run time: " << (double)(d - c) / CLOCKS_PER_SEC << "s\n";
-    printSplitForPy();
+    if (func == 0){
+        data.print();
+        printSplitForPy();
+    }
     std::cout << (double)(d - c) / CLOCKS_PER_SEC;
 }
 
