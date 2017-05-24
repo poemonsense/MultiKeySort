@@ -13,4 +13,4 @@ Multi-keyword Sort Project for Data Structure in UCAS
 
 # How to run it
 1. Download and extract
-2. Double click run.bat, or run it via the PowerShell / command prompt
+2. Double click `run.bat`, or run it via the PowerShell / command prompt
