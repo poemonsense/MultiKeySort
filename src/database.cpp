@@ -16,7 +16,7 @@ namespace Database
         return (r.getData(key) / intPower(NUM_BASE, k)) % NUM_BASE;
     }
 
-    inline int getDigit(int num, int key, int k)
+    inline int getDigit(int num, int k)
     {
         return (num / intPower(NUM_BASE, k)) % NUM_BASE;
     }
@@ -29,9 +29,37 @@ namespace Database
         return len;
     }
 
+    LinkData &LinkData::mergeSort(int key, int low, int high, std::vector<int> &order)
+    {
+        if (low < high) {
+            int mid = (low + high) / 2;
+            this->mergeSort(key, low, mid, order);
+            this->mergeSort(key, mid + 1, high, order);
+            int i = low, j = mid + 1, len = high - low + 1;
+            std::vector<int> sub;
+            while (i <= mid || j <= high){
+                if (i <= mid && j <= high) {
+                    if (this->getData(order[i], key) <= this->getData(order[j], key))
+                        sub.push_back(order[i++]);
+                    else
+                        sub.push_back(order[j++]);
+                }
+                else if (i <= mid)
+                    sub.push_back(order[i++]);
+                else
+                    sub.push_back(order[j++]);
+            }
+            for (i = 0; i != len; i++)
+                order[low + i] = sub[i];
+        }
+        return *this;
+    }
+
     LinkData &LinkData::mergeSort(int key)
     {
-        /* TO BE COMPLETED */
+        auto order = this->getOrder();
+        this->mergeSort(key, 0, recnum - 1, order);
+        this->setOrder(order);
         return *this;
     }
 
@@ -42,45 +70,22 @@ namespace Database
         return *this;
     }
 
-    std::vector<std::vector<int>> Distribute(LinkData D, int key, int pos)
-    {
-        std::vector<std::vector<int>> result(NUM_BASE);
-        std::vector<LinkRecord> data = D.getData();
-        for (int i = D.getHead(); i != EMPTY_TAIL; i = data[i].getNext()){
-            //std::cout << i << "qqq" << data[i].getData(key) << " asad" << key << std::endl;
-            result[getDigit(data[i], key, pos)].push_back(i);
-        }
-        return result;
-    }
-
-    void Collect(LinkData &D, std::vector<std::vector<int>> info)
-    {
-        int previous;
-        for (int i = 0; i != NUM_BASE; i++)
-            if (info[i].size() > 0) {
-                D.setHead(info[i][0]);
-                previous = info[i][0];
-                info[i].erase(info[i].begin());
-                break;
-            }
-        for (int i = 0; i != NUM_BASE; i++) {
-            for (unsigned j = 0; j != info[i].size(); j++) {
-                D.setNext(previous, info[i][j]);
-                previous = info[i][j];
-            }
-        }
-        D.setNext(previous, EMPTY_TAIL);
-    }
-
     LinkData &LinkData::radixSort(int key)
     {
+        auto order = this->getOrder();
         int numLength = getLength(MAX_DATA_NUM);
-        for (int i = keynum - 1; i >= 0; i--) {
-            for (int j = 0; j != numLength; j++) {
-                auto result = Distribute(*this, i, j);
-                Collect(*this, result);
-            }
+        for (int pos = 0; pos != numLength; pos++) {
+            // distribute part
+            std::vector<std::vector<int>> collect(NUM_BASE);
+            for (auto rec: order)
+                collect[getDigit(this->getData(rec, key), pos)].push_back(rec);
+            // collect part
+            unsigned i = 0;
+            for (auto col: collect)
+                for (auto pos: col)
+                    order[i++] = pos;
         }
+        this->setOrder(order);
         return *this;
     }
 
