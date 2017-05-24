@@ -4,15 +4,14 @@
 import subprocess
 from tkinter import *
 from tkinter import filedialog
+from tkinter import messagebox
 from tkinter.ttk import *
-
+import xlwt, time
 
 def run(runtime, cmd, cin):
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     result = p.communicate(input=cin)
     result = result[0].decode('UTF-8').replace("\r", "")
-    file  = open("result_%d.txt" % runtime, "w")
-    file.write(result)
     return result
 
 def getFilePath():
@@ -43,17 +42,38 @@ def makeResult(func, result):
         radixTime = float(result[2].strip())
         merge = make2DList(result[3])
         mergeTime = float(result[4].strip())
-        return (origin, radix, merge, radixTime, mergeTime)
-'''
-cin = makecin(keynum, recnum)
-result = run(runtime, cmd, cin)
-result = makeResult(func, result)
-print(result[3], result[4])
+        return [origin, radix, merge, radixTime, mergeTime]
 
-'''
+def getCurrentTime():
+    return time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(time.time()))
+
+def writeToExcel(data, count):
+    workbook = xlwt.Workbook()
+    name = ["init", "radix", "merge"]
+    for i in range(count):
+        sheet = workbook.add_sheet(name[i])
+        for row in range(len(data[i])):
+            for col in range(len(data[i][row])):
+                sheet.write(row, col, str(data[i][row][col]))
+    time = getCurrentTime().replace(':','-').replace(' ','-')
+    workbook.save("result-%s.xls" % time)
+
+def analyse(result):
+    result = result.strip().split('\n')
+    for i in range(len(result)):
+        result[i] = result[i].split(', ')
+    radix, merge = 0, 0
+    for record in result:
+        radix += float(record[0])
+        merge += float(record[1])
+    radix /= len(result)
+    merge /= len(result)
+    return [radix, merge, merge / radix]
+
 ############
 # GUI part #
 ############
+
 class presentation(Frame):
     def __init__(self, master, data):
         self.frame = Frame(master)
@@ -94,7 +114,11 @@ class presentation(Frame):
         buttonFrame = Frame(self.frame, padding=(5,4))
         buttonFrame.grid(row=4, column=1, columnspan=2)
         self.randomButton = Button(buttonFrame, text='随机', command=lambda: self.random(data))
-        self.randomButton.grid()
+        self.randomButton.grid(row=0, column=0)
+        self.analyButton = Button(buttonFrame, text='分析', command=self.analyse)
+        self.analyButton.grid(row=0, column=1)
+        self.resetButton = Button(buttonFrame, text='重置', command=self.reset)
+        self.resetButton.grid(row=0, column=2)
 
         root.bind('<Return>', lambda: self.random(data))
         self.recnum.focus()
@@ -102,11 +126,23 @@ class presentation(Frame):
     def random(self, data):
         rec = self.recnum.get()
         key = self.keynum.get()
-        cin = makecin(key, rec)
+        cin = makecin(0, key, rec)
         result = run(data.runtime, data.cmd, cin)
         data.runtime += 1
         result = makeResult(0, result)
         self.showResult.insert(END, str(result[3]) + ", " + str(result[4]) + "\n")
+        writeToExcel(result[:3], 3)
+
+    def analyse(self):
+        result = self.showResult.get("0.0", "end")
+        result = analyse(result)
+        info = '''Radix Sort Average Time: %.3fs
+Merge Sort Average Time: %.3fs
+Radix Sort is %.1fx faster than Merge Sort''' % (result[0], result[1], result[2])
+        messagebox.showinfo(title='Analyse',message=info)
+
+    def reset(self):
+        self.showResult.delete('1.0', END)
 
 
 class Struct(object): pass
@@ -115,8 +151,8 @@ data.runtime = 0
 data.cmd = getFilePath()
 root = Tk()
 root.title("多关键字排序 Multi-keyword Sorting")
+root.iconbitmap('ucas.ico')
 w, h = root.winfo_screenwidth(), root.winfo_screenheight()
-# root.geometry("%dx%d+0+0" % (w, h))
 window = presentation(root, data)
 root.focus_set()
 root.mainloop()
