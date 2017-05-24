@@ -1,5 +1,5 @@
 # MultiKeySort
-Multi-keyword Sort Project for Data Structure in UCAS
+Multi-keyword Sorting Project for Data Structure in UCAS
 
 # Contributors
 - Yinan Xu
