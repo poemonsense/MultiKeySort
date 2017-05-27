@@ -1,6 +1,6 @@
 #include "database.h"
 #include <vector>
-
+#include <stack>
 namespace Database
 {
     inline int intPower(int a, int n)
@@ -33,13 +33,13 @@ namespace Database
     {
         if (low < high) {
             int mid = (low + high) / 2;
-            this->mergeSort(key, low, mid, order);
-            this->mergeSort(key, mid + 1, high, order);
+            mergeSort(key, low, mid, order);
+            mergeSort(key, mid + 1, high, order);
             int i = low, j = mid + 1, len = high - low + 1;
             std::vector<int> sub;
             while (i <= mid || j <= high){
                 if (i <= mid && j <= high) {
-                    if (this->getData(order[i], key) <= this->getData(order[j], key))
+                    if (getData(order[i], key) <= getData(order[j], key))
                         sub.push_back(order[i++]);
                     else
                         sub.push_back(order[j++]);
@@ -57,43 +57,107 @@ namespace Database
 
     LinkData &LinkData::mergeSort(int key)
     {
-        auto order = this->getOrder();
-        this->mergeSort(key, 0, recnum - 1, order);
-        this->setOrder(order);
+        auto order = getOrder();
+        mergeSort(key, 0, recnum - 1, order);
+        setOrder(order);
         return *this;
     }
 
-    LinkData &LinkData::mergeSort()
+    LinkData &LinkData::mergeSort_LSD()
     {
-        for (auto i = this->keynum; i != 0; )
-            (*this).mergeSort(--i);
+        for (auto i = keynum; i != 0; )
+            mergeSort(--i);
         return *this;
     }
 
-    LinkData &LinkData::radixSort(int key)
+    LinkData &LinkData::mergeSort_MSD()
     {
-        auto order = this->getOrder();
+        return sort_MSD(0);
+    }
+
+    LinkData &LinkData::radixSort(int key, int low, int high, std::vector<int> &order)
+    // radix sort in range(order[low], order[high])
+    // sort by changing vector order
+    // a helper function
+    {
         int numLength = getLength(MAX_DATA_NUM);
         for (int pos = 0; pos != numLength; pos++) {
-            // distribute part
+            // distribution part
             std::vector<std::vector<int>> collect(NUM_BASE);
-            for (auto rec: order)
-                collect[getDigit(this->getData(rec, key), pos)].push_back(rec);
-            // collect part
-            unsigned i = 0;
+            for (int i = low; i <= high; i++){
+                auto rec = order[i];
+                collect[getDigit(getData(rec, key), pos)].push_back(rec);
+            }
+            // collection part
+            unsigned i = low;
             for (auto col: collect)
                 for (auto pos: col)
                     order[i++] = pos;
         }
-        this->setOrder(order);
         return *this;
     }
 
-    LinkData &LinkData::radixSort()
+    LinkData &LinkData::radixSort(int key)
+    // radix sort according to keys[key]
     {
-        if (this->recnum != 0)
-            for (auto i = this->keynum; i != 0; )
-                (*this).radixSort(--i);
+        auto order = getOrder();
+        radixSort(key, 0, recnum - 1, order);
+        setOrder(order);
+        return *this;
+    }
+
+    LinkData &LinkData::radixSort_LSD()
+    // LSD radix sort
+    {
+        for (auto i = keynum; i != 0; )
+            radixSort(--i);
+        return *this;
+    }
+
+    LinkData &LinkData::radixSort_MSD()
+    // MSD radix sort
+    {
+        return sort_MSD(1);
+    }
+
+    LinkData &LinkData::sort_MSD(int type)
+    // type == 0: merge sort
+    // type == 1: radix sort
+    {
+        if (keynum != 0){
+            auto order = getOrder();
+            std::stack<int> from, to;
+            from.push(order[0]);
+            to.push(order[recnum - 1]);
+            for (unsigned i = 0; (!from.empty()) && i != keynum; i++){
+                while (!from.empty()){
+                    if (type == 0)
+                        mergeSort(i, from.top(), to.top(), order);
+                    else if (type == 1)
+                        radixSort(i, from.top(), to.top(), order);
+                    from.pop();
+                    to.pop();
+                }
+                // update regions of recursion
+                unsigned low = 0;
+                for (unsigned j = 0; j != recnum; j++)
+                    if (j == recnum - 1 && j != low){
+                        from.push(low);
+                        to.push(j);
+                    }
+                    else if (j != recnum - 1){
+                        auto left = getData(order[j], i), right = getData(order[j + 1], i);
+                        if (left != right){
+                            if (j != low){
+                                from.push(low);
+                                to.push(j);
+                            }
+                            low = j + 1;
+                        }
+                    }
+            }
+            setOrder(order);
+        }
         return *this;
     }
 }

@@ -78,9 +78,11 @@ namespace Database
         LinkData &setNext(unsigned, unsigned);
         const LinkData &print() const;
         LinkData &print();
-        LinkData &mergeSort();
+        LinkData &mergeSort_LSD();
+        LinkData &mergeSort_MSD();
         LinkData &mergeSort(int);
-        LinkData &radixSort();
+        LinkData &radixSort_LSD();
+        LinkData &radixSort_MSD();
         LinkData &radixSort(int);
         std::vector<int> getOrder() const;
         LinkData &setOrder(std::vector<int>);
@@ -91,6 +93,8 @@ namespace Database
         int head = -1;
         int tail = EMPTY_NEXT;
         LinkData &mergeSort(int, int, int, std::vector<int> &);
+        LinkData &radixSort(int, int, int, std::vector<int> &);
+        LinkData &sort_MSD(int);
     };
 
     class multiple_assignments: public std::logic_error {
