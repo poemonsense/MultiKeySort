@@ -1,10 +1,107 @@
 #include "database.h"
+
 #include <vector>
 #include <stack>
+#include <iomanip>
+#include <iostream>
 
 namespace Database
 {
-    inline int intPower(int a, int n)
+    LinkRecord &LinkRecord::print()
+    {
+        for (auto out: keys)
+            std::cout << std::setw(3) << out << "  ";
+        return *this;
+    }
+
+    const LinkRecord &LinkRecord::print() const
+    {
+        for (auto out: keys)
+            std::cout << std::setw(3) << out << "  ";
+        return *this;
+    }
+}
+
+namespace Database
+{
+    int LinkData::getMid() const
+    {
+        return getMid(head, tail);
+    }
+
+    int LinkData::getMid(int low, int high) const
+    {
+        std::vector<int> order;
+        if (recnum != 0){
+            unsigned short finish = 0;
+            int left, right;
+            for (int i = head, num = 0; i != EMPTY_NEXT && finish != 2; i = records[i].getNext(), num++){
+                order.push_back(i);
+                if (i == low){
+                    left = num;
+                    finish++;
+                }
+                if (i == high){
+                    right = num;
+                    finish++;
+                }
+            }
+            if (finish != 2)
+                return -1;
+            else
+                return order[(right + left) / 2];
+        }
+        else
+            return -1;
+    }
+
+    LinkData &LinkData::print()
+    {
+        if (!this->empty())
+            for (int i = head; i != EMPTY_NEXT; i = records[i].getNext()){
+                records[i].print();
+                std::cout << "\n";
+            }
+        return *this;
+    }
+
+    const LinkData &LinkData::print() const
+    {
+        if (!this->empty())
+            for (int i = head; i != EMPTY_NEXT; i = records[i].getNext()){
+                records[i].print();
+                std::cout << "\n";
+            }
+        return *this;
+    }
+
+    std::vector<int> LinkData::getOrder() const
+    {
+        std::vector<int> order;
+        if (recnum != 0)
+            for (int i = head; i != EMPTY_NEXT; i = records[i].getNext())
+                order.push_back(i);
+        return order;
+    }
+
+    LinkData &LinkData::setOrder(const std::vector<int> &order)
+    {
+        if (recnum != 0){
+            head = order[0];
+            tail = order[recnum - 1];
+            for (unsigned i = 0; i != recnum - 1; i++)
+                records[order[i]].setNext(order[i + 1]);
+            records[order[recnum - 1]].setNext(EMPTY_NEXT);
+        }
+        return *this;
+    }
+}
+
+/* Sorting functions implementation */
+namespace Database
+{
+    /* Helper functions for sort */
+    int intPower(int a, int n)
     {
         int result = 1;
         for (; n > 0; n--)
@@ -12,17 +109,17 @@ namespace Database
         return result;
     }
 
-    inline int getDigit(const LinkRecord &r, int key, int k)
+    int getDigit(const LinkRecord &r, int key, int k)
     {
         return (r.getData(key) / intPower(NUM_BASE, k)) % NUM_BASE;
     }
 
-    inline int getDigit(int num, int k)
+    int getDigit(int num, int k)
     {
         return (num / intPower(NUM_BASE, k)) % NUM_BASE;
     }
 
-    inline int getLength(int num)
+    int getLength(int num)
     {
         int len;
         for (len = 0; num > 0; len++)
