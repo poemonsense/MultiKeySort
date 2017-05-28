@@ -6,24 +6,22 @@
 #include <iomanip>
 #include <iostream>
 
-// const unsigned MAX_KEY_NUM = 5;
-// const unsigned MAX_RECORD_NUM = 10000;
-
-typedef unsigned int KeyType;
-const KeyType MAX_DATA_NUM = 256;
-const KeyType NUM_BASE = 10;
-const int EMPTY_NEXT = -1;
-
 namespace Database
 {
+
+    typedef unsigned int KeyType;
+    const KeyType MAX_DATA_NUM = 256;
+    const KeyType NUM_BASE = 10;
+    const int EMPTY_NEXT = -1;
+
     class LinkRecord
     {
         //friend class LinkData;
     public:
         // constructors
         LinkRecord() = default;
-        LinkRecord(std::vector<KeyType> data): keys(data) { }
-        LinkRecord(std::vector<KeyType> data, int nextVal)
+        LinkRecord(const std::vector<KeyType> &data): keys(data) { }
+        LinkRecord(const std::vector<KeyType> &data, int nextVal)
             : keys(data), next(nextVal) { }
         // methods
         std::vector<KeyType> getData() const { return keys; }
@@ -39,15 +37,15 @@ namespace Database
 
     inline LinkRecord &LinkRecord::print()
     {
-        for (unsigned i = 0; i != keys.size(); i++)
-            std::cout << std::setw(3) << keys[i] << "  ";
+        for (auto out: keys)
+            std::cout << std::setw(3) << out << "  ";
         return *this;
     }
 
     inline const LinkRecord &LinkRecord::print() const
     {
-        for (unsigned i = 0; i != keys.size(); i++)
-            std::cout << std::setw(3) << keys[i] << "  ";
+        for (auto out: keys)
+            std::cout << std::setw(3) << out << "  ";
         return *this;
     }
 }
@@ -66,13 +64,12 @@ namespace Database
         int getRecNum() const { return recnum; }
         std::vector<LinkRecord> getData() const { return records; }
         LinkRecord getData(int n) const { return records[n]; }
-        KeyType getData(int n, int key) const { return records[n].getData(key); }
         int getHead() const { return head; }
         int getTail() const { return tail; }
         int getMid() const;
         int getMid(int, int) const;
         bool empty() const { return recnum == 0; };
-        LinkData &add(std::vector<KeyType>);
+        LinkData &add(const std::vector<KeyType> &);
         LinkData &setKeyNum(int);
         LinkData &setHead(unsigned);
         LinkData &setNext(unsigned, unsigned);
@@ -85,7 +82,7 @@ namespace Database
         LinkData &radixSort_MSD();
         LinkData &radixSort(int);
         std::vector<int> getOrder() const;
-        LinkData &setOrder(std::vector<int>);
+        LinkData &setOrder(const std::vector<int> &);
     private:
         std::vector<LinkRecord> records;   // records
         unsigned keynum = 0;               // number of keys
@@ -95,16 +92,7 @@ namespace Database
         LinkData &mergeSort(int, int, int, std::vector<int> &);
         LinkData &radixSort(int, int, int, std::vector<int> &);
         LinkData &sort_MSD(int);
-    };
-
-    class multiple_assignments: public std::logic_error {
-    public:
-        explicit multiple_assignments(const std::string &s): std::logic_error(s) {}
-    };
-
-    class index_mismatch: public std::logic_error {
-    public:
-        explicit index_mismatch(const std::string &s): std::logic_error(s) {}
+        KeyType getData(int n, int key) const { return records[n].getData(key); }
     };
 
     inline int LinkData::getMid() const
@@ -114,13 +102,28 @@ namespace Database
 
     inline int LinkData::getMid(int low, int high) const
     {
-        int num = 0, pos;
-        for (pos = low; pos != high; pos = records[pos].getNext())
-            num++;
-        num /= 2;
-        for (pos = low; num > 0; pos = records[pos].getNext())
-            num--;
-        return pos;
+        std::vector<int> order;
+        if (recnum != 0){
+            unsigned short finish = 0;
+            int left, right;
+            for (int i = head, num = 0; i != EMPTY_NEXT && finish != 2; i = records[i].getNext(), num++){
+                order.push_back(i);
+                if (i == low){
+                    left = num;
+                    finish++;
+                }
+                if (i == high){
+                    right = num;
+                    finish++;
+                }
+            }
+            if (finish != 2)
+                return -1;
+            else
+                return order[(right + left) / 2];
+        }
+        else
+            return -1;
     }
 
     inline LinkData &LinkData::setKeyNum(int num)
@@ -141,7 +144,7 @@ namespace Database
         return *this;
     }
 
-    inline LinkData &LinkData::add(std::vector<KeyType> data)
+    inline LinkData &LinkData::add(const std::vector<KeyType> &data)
     {
         records.push_back(LinkRecord(data));
         if (head == -1)
@@ -183,7 +186,7 @@ namespace Database
         return order;
     }
 
-    inline LinkData &LinkData::setOrder(std::vector<int> order)
+    inline LinkData &LinkData::setOrder(const std::vector<int> &order)
     {
         if (recnum != 0){
             head = order[0];

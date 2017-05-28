@@ -1,6 +1,7 @@
 #include "database.h"
 #include <vector>
 #include <stack>
+
 namespace Database
 {
     inline int intPower(int a, int n)
@@ -11,7 +12,7 @@ namespace Database
         return result;
     }
 
-    inline int getDigit(LinkRecord r, int key, int k)
+    inline int getDigit(const LinkRecord &r, int key, int k)
     {
         return (r.getData(key) / intPower(NUM_BASE, k)) % NUM_BASE;
     }
@@ -145,15 +146,12 @@ namespace Database
                         from.push(low);
                         to.push(j);
                     }
-                    else if (j != recnum - 1){
-                        auto left = getData(order[j], i), right = getData(order[j + 1], i);
-                        if (left != right){
-                            if (j != low){
-                                from.push(low);
-                                to.push(j);
-                            }
-                            low = j + 1;
+                    else if (j != recnum - 1 && getData(order[j], i) != getData(order[j + 1], i)){
+                        if (j != low){
+                            from.push(low);
+                            to.push(j);
                         }
+                        low = j + 1;
                     }
             }
             setOrder(order);

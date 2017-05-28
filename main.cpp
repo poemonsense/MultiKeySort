@@ -18,7 +18,7 @@ void RunAll()
     data3.setKeyNum(keynum);
     data4.setKeyNum(keynum);
     for (int i = 0; i != recnum; i++) {
-        auto temp = RandomGen::randUnsgnIntVec(1, MAX_DATA_NUM, keynum);
+        auto temp = RandomGen::randUnsgnIntVec(1, Database::MAX_DATA_NUM, keynum);
         data1.add(temp);
         data2.add(temp);
         data3.add(temp);
