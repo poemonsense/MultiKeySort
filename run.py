@@ -1,5 +1,4 @@
 # a python script to interact with exe
-# to be completed for GUI
 
 import subprocess
 from tkinter import *
@@ -52,7 +51,7 @@ def makeResult(func, result):
         mergeLSDTime = result[6].strip()
         mergeMSD = make2DList(result[7])
         mergeMSDTime = result[8].strip()
-        return [origin, radixLSD, radixMSD, mergeLSD, mergeMSD, 
+        return [origin, radixLSD, radixMSD, mergeLSD, mergeMSD,
                 radixLSDTime, radixMSDTime, mergeLSDTime, mergeMSDTime]
     elif func == 1:
         result = result.split(splitStr)
@@ -201,16 +200,13 @@ MSD Radix Sort is %.1fx faster than MSD Merge Sort''' % (result[0], result[1], \
         self.showResult.delete('1.0', END)
 
     def trend(self):
-        key = [1, 2, 5, 6, 8, 10, 12, 14, 17, 20]
-        rec = [2000, 5000, 10000, 12000, 15000, 18000, 20000, 25000]
-        #key = [1, 2, 5, 6, 8]
-        #rec = [2000, 5000, 10000, 12000, 15000]
+        key = [1, 2, 5, 6, 8, 10, 12, 14, 17, 20, 25, 30, 40, 50, 100]
+        rec = [2000, 5000, 10000, 12000, 15000, 18000, 20000, 25000, 30000, 50000]
         self.showResult.delete('1.0', END)
-        # TIME ~ key, set rec = 10000, 20000
         result = []
         for k in key:
             for r in rec:
-                self.var.set("Loading...\nrecnum = %s, keynum = %s" % (k, r))
+                self.var.set("Loading...\nkeynum = %s, recnum = %s" % (k, r))
                 self.root.update()
                 cin = makecin(1, k, r)
                 out = run(data.cmd, cin)
@@ -219,62 +215,31 @@ MSD Radix Sort is %.1fx faster than MSD Merge Sort''' % (result[0], result[1], \
                 if k == key[-1] and r == rec[-1]:
                     maxTime = float(out[2])
                 self.showResult.insert(END, ", ".join(out) + "\n")
-        plt.figure(1)
-        recTime = [[[] for i in range(len(key))] for j in range(4)]
-        for item in result:
-            for i in range(4):
-                recTime[i][key.index(item[0])].append(item[i + 2])
         colors = ['r', 'b', 'g', 'y']
         markers = ['s', '^', 'o', '*']
-        for i in range(len(recTime)):
-            plt.subplot(210 + 2 - (i + 1) % 2)
-            for item in recTime[i]:
-                line = plt.plot(rec, item)
-                plt.setp(line, color=colors[i], aa=True, ls='-', marker=markers[i])
-        plt.title('TIME = TIME(recnum)\nABove is LSD, below is MSD')
-        plt.axis([0.8 * float(rec[0]), float(rec[-1]) * 1.05, 0, maxTime * 1.05])
-
-        plt.figure(2)
-        recTime = [[[] for i in range(len(key))] for j in range(4)]
-        for item in result:
+        plot = [[211, 212, 211, 212], [211, 211, 212, 212]]
+        title = ['TIME = TIME(recnum)\nAbove is LSD, below is MSD',
+                 'TIME = TIME(recnum)\nAbove is radix sort, below is merge sort',
+                 'TIME = TIME(keynum)\nAbove is LSD, below is MSD',
+                 'TIME = TIME(keynum)\nAbove is radix sort, below is merge sort']
+        length = [len(key), len(rec)]
+        factor = [key, rec]
+        minSize = [float(rec[0]), float(key[0])]
+        maxSize = [float(rec[-1]), float(key[-1])]
+        for j in range(4):
+            index = j // 2
+            plt.figure(j + 1)
+            runTime = [[[] for i in range(length[index])] for j in range(4)]
+            for item in result:
+                for i in range(4):
+                    runTime[i][factor[index].index(item[index])].append(item[i + 2])
             for i in range(4):
-                recTime[i][key.index(item[0])].append(item[i + 2])
-        colors = ['r', 'b', 'g', 'y']
-        markers = ['s', '^', 'o', '*']
-        for i in range(len(recTime)):
-            plt.subplot(210 + 1 + i // 2)
-            for item in recTime[i]:
-                line = plt.plot(rec, item)
-                plt.setp(line, color=colors[i], aa=True, ls='-', marker=markers[i])
-        plt.title('TIME = TIME(recnum)\nABove is radix sort, below is merge sort')
-        plt.axis([0.8 * float(rec[0]), float(rec[-1]) * 1.05, 0, maxTime * 1.05])
-
-        plt.figure(3)
-        keyTime = [[[] for i in range(len(rec))] for j in range(4)]
-        for item in result:
-            for i in range(4):
-                keyTime[i][rec.index(item[1])].append(item[i + 2])
-        for i in range(len(keyTime)):
-            plt.subplot(210 + 2 - (i + 1) % 2)
-            for item in keyTime[i]:
-                line = plt.plot(key, item)
-                plt.setp(line, color=colors[i], aa=True, ls='-', marker=markers[i])
-        plt.title('TIME = TIME(keynum)\nABove is LSD, below is MSD')
-        plt.axis([0.8 * float(key[0]), float(key[-1]) * 1.05, 0, maxTime * 1.05])
-
-        plt.figure(4)
-        keyTime = [[[] for i in range(len(rec))] for j in range(4)]
-        for item in result:
-            for i in range(4):
-                keyTime[i][rec.index(item[1])].append(item[i + 2])
-        for i in range(len(keyTime)):
-            plt.subplot(210 + 1 + i // 2)
-            for item in keyTime[i]:
-                line = plt.plot(key, item)
-                plt.setp(line, color=colors[i], aa=True, ls='-', marker=markers[i])
-        plt.title('TIME = TIME(keynum)\nABove is radix sort, below is merge sort')
-        plt.axis([0.8 * float(key[0]), float(key[-1]) * 1.05, 0, maxTime * 1.05])
-
+                plt.subplot(plot[j % 2][i])
+                for item in runTime[i]:
+                    line = plt.plot(factor[1 - index], item)
+                    plt.setp(line, color=colors[i], aa=True, ls='-', marker=markers[i])
+            plt.title(title[j])
+            plt.axis([0.8 * minSize[index], 1.05 * maxSize[index], 0, maxTime * 1.05])
         plt.show()
 
 

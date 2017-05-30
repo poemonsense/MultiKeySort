@@ -27,6 +27,7 @@ namespace Database
         KeyType getData(int n) const { return keys[n]; }
         int getNext() const { return next; }
         LinkRecord &setNext(unsigned pos) { next = pos; return *this; }
+        LinkRecord &setData(unsigned n, KeyType d) { keys[n] = d; return *this; }
         const LinkRecord &print() const;
         LinkRecord &print();
     private:
