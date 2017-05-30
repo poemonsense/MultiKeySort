@@ -128,6 +128,7 @@ namespace Database
     }
 
     LinkData &LinkData::mergeSort(int key, int low, int high, std::vector<int> &order)
+    // merge sort in order[low], order[high]
     {
         if (low < high) {
             int mid = (low + high) / 2;
@@ -225,8 +226,8 @@ namespace Database
         if (keynum != 0){
             auto order = getOrder();
             std::stack<int> from, to;
-            from.push(order[0]);
-            to.push(order[recnum - 1]);
+            from.push(0);
+            to.push(recnum - 1);
             for (unsigned i = 0; (!from.empty()) && i != keynum; i++){
                 while (!from.empty()){
                     if (type == 0)
@@ -238,18 +239,25 @@ namespace Database
                 }
                 // update regions of recursion
                 unsigned low = 0;
-                for (unsigned j = 0; j != recnum; j++)
-                    if (j == recnum - 1 && j != low){
+                for (unsigned j = 0; j != recnum; j++){
+                    if (j != recnum - 1){
+                        bool notEqualNow = false, notEqualBefore = false;
+                        notEqualNow = (getData(order[j], i) != getData(order[j + 1], i));
+                        if (i != 0)
+                            notEqualBefore = (getData(order[j], i - 1) != getData(order[j + 1], i - 1));
+                        if (notEqualNow || notEqualBefore){
+                            if (j != low){
+                                from.push(low);
+                                to.push(j);
+                            }
+                            low = j + 1;
+                        }
+                    }
+                    else if (j == recnum - 1 && j != low){
                         from.push(low);
                         to.push(j);
                     }
-                    else if (j != recnum - 1 && getData(order[j], i) != getData(order[j + 1], i)){
-                        if (j != low){
-                            from.push(low);
-                            to.push(j);
-                        }
-                        low = j + 1;
-                    }
+                }
             }
             setOrder(order);
         }
