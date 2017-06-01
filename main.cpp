@@ -10,17 +10,23 @@ void printSplitForPy()
 
 void RunAll()
 {
-    // func 0: randomly generate, print the database
-    // func 1: randomly generate, do not print the database
-    // func 2: manually generate, print the database
+    // func 0: randomly generate, print it out
+    // func 1: randomly generate, do not print it out
+    // func 2: manually generate, print it out
+    // func 4: randomly generate, sort by the provided priority, print it out
     int func, keynum, recnum;
     std::cin >> func >> keynum >> recnum;
-    Database::LinkData data1, data2, data3, data4;
-    data1.setKeyNum(keynum);
-    data2.setKeyNum(keynum);
-    data3.setKeyNum(keynum);
-    data4.setKeyNum(keynum);
-    for (int i = 0; i != recnum; i++) {
+    std::vector<unsigned> priority;
+    if (func == 4){
+        unsigned key;
+        for (int i = 0; i != keynum; i++){
+            std::cin >> key;
+            priority.push_back(key);
+        }
+    }
+    Database::LinkData data;
+    data.setKeyNum(keynum);
+    for (int i = 0; i != recnum; i++){
         std::vector<unsigned> temp;
         if (func == 3){
             unsigned x;
@@ -31,58 +37,74 @@ void RunAll()
         }
         else
             temp = RandomGen::randUnsgnIntVec(1, Database::MAX_DATA_NUM, keynum);
-        data1.add(temp);
-        data2.add(temp);
-        data3.add(temp);
-        data4.add(temp);
+        data.add(temp);
     }
-    if (func == 0 || func == 3){
-        data1.print();
+    if (func == 0 || func == 3 || func == 4){
+        data.print();
         printSplitForPy();
     }
+    data.resetOrder();
 
-    clock_t a = clock(), b;
-    data1.radixSort_LSD();
+    clock_t a, b;
+
+    /* Testing radixSort_LSD */
+    a = clock();
+    if (func == 4)
+        data.radixSort_LSD(priority);
+    else
+        data.radixSort_LSD();
     b = clock();
-    if (func == 0 || func == 3){
-        data1.print();
+    if (func == 0 || func == 3 || func == 4){
+        data.print();
         printSplitForPy();
     }
-
+    data.resetOrder();
     std::cout << (double)(b - a) / CLOCKS_PER_SEC;
     printSplitForPy();
 
+    /* Testing radixSort_MSD */
     a = clock();
-    data2.radixSort_MSD();
+    if (func == 4)
+        data.radixSort_MSD(priority);
+    else
+        data.radixSort_MSD();
     b = clock();
-    if (func == 0 || func == 3){
-        data2.print();
+    if (func == 0 || func == 3 || func == 4){
+        data.print();
         printSplitForPy();
     }
-
+    data.resetOrder();
     std::cout << (double)(b - a) / CLOCKS_PER_SEC;
     printSplitForPy();
 
+    /* Testing mergeSort_LSD */
     a = clock();
-    data3.mergeSort_LSD();
+    if (func == 4)
+        data.mergeSort_LSD(priority);
+    else
+        data.mergeSort_LSD();
     b = clock();
-    if (func == 0 || func == 3){
-        data3.print();
+    if (func == 0 || func == 3 || func == 4){
+        data.print();
         printSplitForPy();
     }
-
+    data.resetOrder();
     std::cout << (double)(b - a) / CLOCKS_PER_SEC;
     printSplitForPy();
 
+    /* Testing mergeSort_MSD */
     a = clock();
-    data4.mergeSort_MSD();
+    if (func == 4)
+        data.mergeSort_MSD(priority);
+    else
+        data.mergeSort_MSD();
     b = clock();
-    if (func == 0 || func == 3){
-        data4.print();
+    if (func == 0 || func == 3 || func == 4){
+        data.print();
         printSplitForPy();
     }
-
     std::cout << (double)(b - a) / CLOCKS_PER_SEC;
+
 }
 
 int main()

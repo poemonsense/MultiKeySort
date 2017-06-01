@@ -95,6 +95,18 @@ namespace Database
         }
         return *this;
     }
+
+    LinkData &LinkData::resetOrder()
+    {
+        if (recnum != 0){
+            head = 0;
+            tail = recnum - 1;
+            for (unsigned i = 0; i != recnum - 1; i++)
+                records[i].setNext(i + 1);
+            records[recnum - 1].setNext(EMPTY_NEXT);
+        }
+        return *this;
+    }
 }
 
 /* Sorting functions implementation */
@@ -162,11 +174,23 @@ namespace Database
         return *this;
     }
 
+    LinkData &LinkData::mergeSort_LSD(const std::vector<unsigned> &order)
+    {
+        for (auto i = order.size(); i != 0;)
+            mergeSort(order[--i]);
+        return *this;
+    }
+
     LinkData &LinkData::mergeSort_LSD()
     {
         for (auto i = keynum; i != 0; )
             mergeSort(--i);
         return *this;
+    }
+
+    LinkData &LinkData::mergeSort_MSD(const std::vector<unsigned> &order)
+    {
+        return sort_MSD(0, order);
     }
 
     LinkData &LinkData::mergeSort_MSD()
@@ -205,6 +229,13 @@ namespace Database
         return *this;
     }
 
+    LinkData &LinkData::radixSort_LSD(const std::vector<unsigned> &order)
+    {
+        for (auto i = order.size(); i != 0;)
+            radixSort(order[--i]);
+        return *this;
+    }
+
     LinkData &LinkData::radixSort_LSD()
     // LSD radix sort
     {
@@ -213,10 +244,60 @@ namespace Database
         return *this;
     }
 
+    LinkData &LinkData::radixSort_MSD(const std::vector<unsigned> &order)
+    {
+        return sort_MSD(1, order);
+    }
+
     LinkData &LinkData::radixSort_MSD()
     // MSD radix sort
     {
         return sort_MSD(1);
+    }
+
+    LinkData &LinkData::sort_MSD(int type, const std::vector<unsigned> &priority)
+    // type == 0: merge sort
+    // type == 1: radix sort
+    {
+        if (keynum != 0){
+            auto order = getOrder();
+            std::stack<int> from, to;
+            from.push(0);
+            to.push(recnum - 1);
+            for (unsigned i = 0; (!from.empty()) && i != keynum; i++){
+                while (!from.empty()){
+                    if (type == 0)
+                        mergeSort(priority[i], from.top(), to.top(), order);
+                    else if (type == 1)
+                        radixSort(priority[i], from.top(), to.top(), order);
+                    from.pop();
+                    to.pop();
+                }
+                // update regions of recursion
+                unsigned low = 0;
+                for (unsigned j = 0; j != recnum; j++){
+                    if (j != recnum - 1){
+                        bool notEqualNow = false, notEqualBefore = false;
+                        notEqualNow = (getData(order[j], priority[i]) != getData(order[j + 1], priority[i]));
+                        if (i != 0)
+                            notEqualBefore = (getData(order[j], priority[i - 1]) != getData(order[j + 1], priority[i - 1]));
+                        if (notEqualNow || notEqualBefore){
+                            if (j != low){
+                                from.push(low);
+                                to.push(j);
+                            }
+                            low = j + 1;
+                        }
+                    }
+                    else if (j == recnum - 1 && j != low){
+                        from.push(low);
+                        to.push(j);
+                    }
+                }
+            }
+            setOrder(order);
+        }
+        return *this;
     }
 
     LinkData &LinkData::sort_MSD(int type)
@@ -263,4 +344,6 @@ namespace Database
         }
         return *this;
     }
+
+
 }

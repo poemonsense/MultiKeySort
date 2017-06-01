@@ -64,11 +64,16 @@ namespace Database
         LinkData &mergeSort_LSD();
         LinkData &mergeSort_MSD();
         LinkData &mergeSort(int);
+        LinkData &mergeSort_LSD(const std::vector<unsigned> &);
+        LinkData &mergeSort_MSD(const std::vector<unsigned> &);
         LinkData &radixSort_LSD();
         LinkData &radixSort_MSD();
         LinkData &radixSort(int);
+        LinkData &radixSort_LSD(const std::vector<unsigned> &);
+        LinkData &radixSort_MSD(const std::vector<unsigned> &);
         std::vector<int> getOrder() const;
         LinkData &setOrder(const std::vector<int> &);
+        LinkData &resetOrder();
     private:
         std::vector<LinkRecord> records;   // records
         unsigned keynum = 0;               // number of keys
@@ -79,6 +84,7 @@ namespace Database
         LinkData &mergeSort(int, int, int, std::vector<int> &);
         LinkData &radixSort(int, int, int, std::vector<int> &);
         LinkData &sort_MSD(int);
+        LinkData &sort_MSD(int, const std::vector<unsigned> &);
         KeyType getData(int n, int key) const { return records[n].getData(key); }
     };
 

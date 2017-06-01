@@ -250,7 +250,7 @@ if __name__ == "__main__":
     data.runtime = 0
     data.cmd = getFilePath()
     root = Tk()
-    root.title("多关键字排序 Multi-keyword Sorting")
+    root.title("多关键字排序 Multi-key Sort")
     root.iconbitmap('ucas.ico')
     presentation(root, data)
     root.focus_set()
