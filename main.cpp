@@ -13,16 +13,13 @@ void RunAll()
     // func 0: randomly generate, print it out
     // func 1: randomly generate, do not print it out
     // func 2: manually generate, print it out
-    // func 4: randomly generate, sort by the provided priority, print it out
     int func, keynum, recnum;
     std::cin >> func >> keynum >> recnum;
     std::vector<unsigned> priority;
-    if (func == 4){
-        unsigned key;
-        for (int i = 0; i != keynum; i++){
-            std::cin >> key;
-            priority.push_back(key);
-        }
+    unsigned key;
+    for (int i = 0; i != keynum; i++){
+        std::cin >> key;
+        priority.push_back(key);
     }
     Database::LinkData data;
     data.setKeyNum(keynum);
@@ -39,22 +36,18 @@ void RunAll()
             temp = RandomGen::randUnsgnIntVec(1, Database::MAX_DATA_NUM, keynum);
         data.add(temp);
     }
-    if (func == 0 || func == 3 || func == 4){
+    if (func == 0 || func == 3){
         data.print();
         printSplitForPy();
     }
-    data.resetOrder();
 
     clock_t a, b;
 
     /* Testing radixSort_LSD */
     a = clock();
-    if (func == 4)
-        data.radixSort_LSD(priority);
-    else
-        data.radixSort_LSD();
+    data.radixSort_LSD(priority);
     b = clock();
-    if (func == 0 || func == 3 || func == 4){
+    if (func == 0 || func == 3){
         data.print();
         printSplitForPy();
     }
@@ -64,12 +57,9 @@ void RunAll()
 
     /* Testing radixSort_MSD */
     a = clock();
-    if (func == 4)
-        data.radixSort_MSD(priority);
-    else
-        data.radixSort_MSD();
+    data.radixSort_MSD(priority);
     b = clock();
-    if (func == 0 || func == 3 || func == 4){
+    if (func == 0 || func == 3){
         data.print();
         printSplitForPy();
     }
@@ -79,12 +69,9 @@ void RunAll()
 
     /* Testing mergeSort_LSD */
     a = clock();
-    if (func == 4)
-        data.mergeSort_LSD(priority);
-    else
-        data.mergeSort_LSD();
+    data.mergeSort_LSD(priority);
     b = clock();
-    if (func == 0 || func == 3 || func == 4){
+    if (func == 0 || func == 3){
         data.print();
         printSplitForPy();
     }
@@ -94,12 +81,9 @@ void RunAll()
 
     /* Testing mergeSort_MSD */
     a = clock();
-    if (func == 4)
-        data.mergeSort_MSD(priority);
-    else
-        data.mergeSort_MSD();
+    data.mergeSort_MSD(priority);
     b = clock();
-    if (func == 0 || func == 3 || func == 4){
+    if (func == 0 || func == 3){
         data.print();
         printSplitForPy();
     }

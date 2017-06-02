@@ -7,6 +7,8 @@ from tkinter import messagebox
 from tkinter.ttk import *
 import xlwt, time
 import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
 
 def run(cmd, cin):
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -24,7 +26,11 @@ def getFilePath():
 def makecin(*args):
     result = ''
     for x in args:
-        result += str(x) + " "
+        if isinstance(x, list):
+            for xx in x:
+                result += makecin(xx).decode('UTF-8')
+        else:
+            result += str(x) + " "
     return result.encode('UTF-8')
 
 def make2DList(result):
@@ -69,9 +75,11 @@ def writeToExcel(data):
     name = ["init", "radixLSD", "radixMSD", "mergeLSD", "mergeMSD"]
     for i in range(len(data)):
         sheet = workbook.add_sheet(name[i])
+        for col in range(len(data[i][0])):
+            sheet.write(0, col, str(col))
         for row in range(len(data[i])):
             for col in range(len(data[i][row])):
-                sheet.write(row, col, str(data[i][row][col]))
+                sheet.write(row + 1, col, str(data[i][row][col]))
     now = getCurrentTime().replace(':', '-').replace(' ', '-')
     workbook.save("result-%s.xls" % now)
 
@@ -128,40 +136,51 @@ class presentation(object):
         self.recnum.insert(END, "10000")
         self.recnum.grid()
 
+        prioFrame1 = Frame(frame, padding=(5, 4))
+        prioFrame1.grid(row=3, column=1)
+        prioFrame2 = Frame(frame, padding=(5, 4))
+        prioFrame2.grid(row=3, column=2)
+        prioLabel = Label(prioFrame1, text="排序优先级: ", anchor=CENTER)
+        prioLabel.grid()
+        self.priority = Entry(prioFrame2)
+        self.priority.insert(END, "0,1,2,3,4")
+        self.priority.grid()
+
         resultLabelFrame = Frame(frame, padding=(5, 4))
-        resultLabelFrame.grid(row=3, column=1, columnspan=2)
+        resultLabelFrame.grid(row=4, column=1, columnspan=2)
         resultStr = "radixLSD, radixMSD, mergeLSD, mergeMSD"
         resultLabel = Label(resultLabelFrame, text=resultStr, anchor=CENTER)
         resultLabel.grid()
+
         resultFrame = Frame(frame, padding=(5, 4))
-        resultFrame.grid(row=4, column=1, columnspan=2)
+        resultFrame.grid(row=5, column=1, columnspan=2)
         self.showResult = Text(resultFrame, width=40, height=20)
         self.showResult.grid()
         scrollbar = Scrollbar(frame, command=self.showResult.yview)
-        scrollbar.grid(row=4, column=3, sticky='nsew')
+        scrollbar.grid(row=5, column=3, sticky='nsew')
 
         randomFrame = Frame(frame, padding=(5, 4))
-        randomFrame.grid(row=5, column=1)
+        randomFrame.grid(row=6, column=1)
         analyFrame = Frame(frame, padding=(5, 4))
-        analyFrame.grid(row=5, column=2)
+        analyFrame.grid(row=6, column=2)
         resetFrame = Frame(frame, padding=(5, 4))
-        resetFrame.grid(row=6, column=1)
+        resetFrame.grid(row=7, column=1)
         trendFrame = Frame(frame, padding=(5, 4))
-        trendFrame.grid(row=6, column=2)
+        trendFrame.grid(row=7, column=2)
         randomButton = Button(randomFrame, text='随机', command=lambda: self.random(data))
         randomButton.grid()
         analyButton = Button(analyFrame, text='分析', command=self.analyse)
         analyButton.grid()
-        resetButton = Button(resetFrame, text='重置', command=self.reset)
+        resetButton = Button(resetFrame, text='比较', command=self.compare)
         resetButton.grid()
         trendButton = Button(trendFrame, text='趋势', command=self.trend)
         trendButton.grid()
 
         infoFrame = Frame(frame, padding=(5, 4))
-        infoFrame.grid(row=7, column=1, columnspan=2)
+        infoFrame.grid(row=8, column=1, columnspan=2)
         self.var = StringVar()
-        self.info = Label(infoFrame, textvariable=self.var, anchor=CENTER)
-        self.info.grid()
+        info = Label(infoFrame, textvariable=self.var, anchor=CENTER)
+        info.grid()
 
         root.bind('<Return>', lambda: self.random(data))
         self.recnum.focus()
@@ -169,16 +188,21 @@ class presentation(object):
     def random(self, data):
         rec = self.recnum.get()
         key = self.keynum.get()
+        priority = self.priority.get()
+        priority = priority.split(",")
         self.var.set("Loading...\nrecnum = %s, keynum = %s" % (rec, key))
         self.root.update()
-        cin = makecin(0, key, rec)
+        cin = makecin(0, key, rec, priority)
         result = run(data.cmd, cin)
         data.runtime += 1
         result = makeResult(0, result)
         self.showResult.insert(END, ", ".join(result[5:]) + "\n")
+        self.var.set("Finished!")
+        self.root.update()
         export = messagebox.askquestion("导出", "是否导出至 Excel？")
         if export == 'yes':
             writeToExcel(result[:5])
+            messagebox.showinfo(title="导出", message="导出成功！")
 
     def analyse(self):
         result = self.showResult.get("0.0", "end")
@@ -196,11 +220,55 @@ MSD Radix Sort is %.1fx faster than MSD Merge Sort''' % (result[0], result[1], \
                                      result[2], result[3], ratioLSD, ratioMSD)
         messagebox.showinfo(title='Analyse', message=info)
 
-    def reset(self):
-        self.showResult.delete('1.0', END)
+    def compare(self):
+        '''get from http://pbpython.com/excel-diff-pandas.html'''
+        # Define the diff function to show the changes in each field
+        def report_diff(x):
+            return x[0] if x[0] == x[1] else '{} ---> {}'.format(*x)
+
+        # We want to be able to easily tell which rows have changes
+        def has_change(row):
+            if "--->" in row.to_string():
+                return "Y"
+            else:
+                return "N"
+
+        file = getFilePath()
+        self.var.set("Loading...")
+        self.root.update()
+        # Read in all excel files
+        df1 = pd.read_excel(file, 'radixLSD', na_values=['NA'])
+        df2 = pd.read_excel(file, 'mergeLSD', na_values=['NA'])
+        df3 = pd.read_excel(file, 'radixMSD', na_values=['NA'])
+        df4 = pd.read_excel(file, 'mergeMSD', na_values=['NA'])
+        self.var.set("Comparing radixLSD and mergeLSD...")
+        self.root.update()
+        # Create a panel of the two dataframes
+        diff_panel = pd.Panel(dict(df1=df1, df2=df2))
+        #Apply the diff function
+        diff_output = diff_panel.apply(report_diff, axis=0)
+        # Flag all the changes
+        diff_output['change'] = diff_output.apply(has_change, axis=1)
+        #Save the changes to excel but only include the columns we care about
+        diff_output[(diff_output.change == 'Y')].to_excel('1-2.xlsx', index=False)
+        self.var.set("Comparing radixLSD and radixMSD...")
+        self.root.update()
+        diff_panel = pd.Panel(dict(df1=df1, df2=df3))
+        diff_output = diff_panel.apply(report_diff, axis=0)
+        diff_output['change'] = diff_output.apply(has_change, axis=1)
+        diff_output[(diff_output.change == 'Y')].to_excel('1-3.xlsx', index=False)
+        self.var.set("Comparing radixLSD and mergeMSD...")
+        self.root.update()
+        diff_panel = pd.Panel(dict(df1=df1, df2=df4))
+        diff_output = diff_panel.apply(report_diff, axis=0)
+        diff_output['change'] = diff_output.apply(has_change, axis=1)
+        diff_output[(diff_output.change == 'Y')].to_excel('1-4.xlsx', index=False)
+        self.var.set("Finished!")
+        self.root.update()
+        messagebox.showinfo(title="比较", message="比较成功！")
 
     def trend(self):
-        key = [1, 2, 5, 6, 8, 10, 12, 14, 17, 20, 25, 30, 40, 50, 100]
+        key = [1, 2, 5, 6, 8, 10, 12, 14, 17, 20, 25, 30, 40, 50]
         rec = [2000, 5000, 10000, 12000, 15000, 18000, 20000, 25000, 30000, 50000]
         self.showResult.delete('1.0', END)
         result = []
@@ -208,13 +276,16 @@ MSD Radix Sort is %.1fx faster than MSD Merge Sort''' % (result[0], result[1], \
             for r in rec:
                 self.var.set("Loading...\nkeynum = %s, recnum = %s" % (k, r))
                 self.root.update()
-                cin = makecin(1, k, r)
+                priority = []
+                for i in range(k):
+                    priority += [i]
+                cin = makecin(1, k, r, priority)
                 out = run(data.cmd, cin)
                 out = makeResult(1, out)
                 result.append([k, r] + out)
-                if k == key[-1] and r == rec[-1]:
-                    maxTime = float(out[2])
                 self.showResult.insert(END, ", ".join(out) + "\n")
+        self.var.set("Finished!")
+        self.root.update()
         colors = ['r', 'b', 'g', 'y']
         markers = ['s', '^', 'o', '*']
         plot = [[211, 212, 211, 212], [211, 211, 212, 212]]
@@ -239,7 +310,7 @@ MSD Radix Sort is %.1fx faster than MSD Merge Sort''' % (result[0], result[1], \
                     line = plt.plot(factor[1 - index], item)
                     plt.setp(line, color=colors[i], aa=True, ls='-', marker=markers[i])
             plt.title(title[j])
-            plt.axis([0.8 * minSize[index], 1.05 * maxSize[index], 0, maxTime * 1.05])
+            plt.tight_layout()
         plt.show()
 
 

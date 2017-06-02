@@ -174,10 +174,10 @@ namespace Database
         return *this;
     }
 
-    LinkData &LinkData::mergeSort_LSD(const std::vector<unsigned> &order)
+    LinkData &LinkData::mergeSort_LSD(const std::vector<unsigned> &priority)
     {
-        for (auto i = order.size(); i != 0;)
-            mergeSort(order[--i]);
+        for (auto i = priority.size(); i != 0;)
+            mergeSort(priority[--i]);
         return *this;
     }
 
@@ -188,9 +188,9 @@ namespace Database
         return *this;
     }
 
-    LinkData &LinkData::mergeSort_MSD(const std::vector<unsigned> &order)
+    LinkData &LinkData::mergeSort_MSD(const std::vector<unsigned> &priority)
     {
-        return sort_MSD(0, order);
+        return sort_MSD(0, priority);
     }
 
     LinkData &LinkData::mergeSort_MSD()
@@ -229,10 +229,10 @@ namespace Database
         return *this;
     }
 
-    LinkData &LinkData::radixSort_LSD(const std::vector<unsigned> &order)
+    LinkData &LinkData::radixSort_LSD(const std::vector<unsigned> &priority)
     {
-        for (auto i = order.size(); i != 0;)
-            radixSort(order[--i]);
+        for (auto i = priority.size(); i != 0;)
+            radixSort(priority[--i]);
         return *this;
     }
 
@@ -244,9 +244,9 @@ namespace Database
         return *this;
     }
 
-    LinkData &LinkData::radixSort_MSD(const std::vector<unsigned> &order)
+    LinkData &LinkData::radixSort_MSD(const std::vector<unsigned> &priority)
     {
-        return sort_MSD(1, order);
+        return sort_MSD(1, priority);
     }
 
     LinkData &LinkData::radixSort_MSD()
@@ -273,7 +273,7 @@ namespace Database
                     from.pop();
                     to.pop();
                 }
-                // update regions of recursion
+                // update range of recursion
                 unsigned low = 0;
                 for (unsigned j = 0; j != recnum; j++){
                     if (j != recnum - 1){
@@ -304,46 +304,10 @@ namespace Database
     // type == 0: merge sort
     // type == 1: radix sort
     {
-        if (keynum != 0){
-            auto order = getOrder();
-            std::stack<int> from, to;
-            from.push(0);
-            to.push(recnum - 1);
-            for (unsigned i = 0; (!from.empty()) && i != keynum; i++){
-                while (!from.empty()){
-                    if (type == 0)
-                        mergeSort(i, from.top(), to.top(), order);
-                    else if (type == 1)
-                        radixSort(i, from.top(), to.top(), order);
-                    from.pop();
-                    to.pop();
-                }
-                // update regions of recursion
-                unsigned low = 0;
-                for (unsigned j = 0; j != recnum; j++){
-                    if (j != recnum - 1){
-                        bool notEqualNow = false, notEqualBefore = false;
-                        notEqualNow = (getData(order[j], i) != getData(order[j + 1], i));
-                        if (i != 0)
-                            notEqualBefore = (getData(order[j], i - 1) != getData(order[j + 1], i - 1));
-                        if (notEqualNow || notEqualBefore){
-                            if (j != low){
-                                from.push(low);
-                                to.push(j);
-                            }
-                            low = j + 1;
-                        }
-                    }
-                    else if (j == recnum - 1 && j != low){
-                        from.push(low);
-                        to.push(j);
-                    }
-                }
-            }
-            setOrder(order);
-        }
-        return *this;
+        std::vector<unsigned> priority;
+        for (unsigned i = 0; i != keynum; i++)
+            priority.push_back(i);
+        return sort_MSD(type, priority);
     }
-
 
 }
