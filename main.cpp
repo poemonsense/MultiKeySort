@@ -2,6 +2,7 @@
 #include "database.h"
 #include <iostream>
 #include <ctime>
+#include <chrono>
 
 void printSplitForPy()
 {
@@ -41,53 +42,51 @@ void RunAll()
         printSplitForPy();
     }
 
-    clock_t a, b;
-
+    auto a = std::chrono::steady_clock::now();
     /* Testing radixSort_LSD */
-    a = clock();
     data.radixSort_LSD(priority);
-    b = clock();
+    auto b = std::chrono::steady_clock::now();
     if (func == 0 || func == 3){
         data.print();
         printSplitForPy();
     }
     data.resetOrder();
-    std::cout << (double)(b - a) / CLOCKS_PER_SEC;
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(b - a).count() / 1000.0;
     printSplitForPy();
 
     /* Testing radixSort_MSD */
-    a = clock();
+    a = std::chrono::steady_clock::now();
     data.radixSort_MSD(priority);
-    b = clock();
+    b = std::chrono::steady_clock::now();
     if (func == 0 || func == 3){
         data.print();
         printSplitForPy();
     }
     data.resetOrder();
-    std::cout << (double)(b - a) / CLOCKS_PER_SEC;
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(b - a).count() / 1000.0;
     printSplitForPy();
 
     /* Testing mergeSort_LSD */
-    a = clock();
+    a = std::chrono::steady_clock::now();
     data.mergeSort_LSD(priority);
-    b = clock();
+    b = std::chrono::steady_clock::now();
     if (func == 0 || func == 3){
         data.print();
         printSplitForPy();
     }
     data.resetOrder();
-    std::cout << (double)(b - a) / CLOCKS_PER_SEC;
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(b - a).count() / 1000.0;
     printSplitForPy();
 
     /* Testing mergeSort_MSD */
-    a = clock();
+    a = std::chrono::steady_clock::now();
     data.mergeSort_MSD(priority);
-    b = clock();
+    b = std::chrono::steady_clock::now();
     if (func == 0 || func == 3){
         data.print();
         printSplitForPy();
     }
-    std::cout << (double)(b - a) / CLOCKS_PER_SEC;
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(b - a).count() / 1000.0;
 
 }
 

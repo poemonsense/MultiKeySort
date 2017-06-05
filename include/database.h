@@ -15,7 +15,6 @@ namespace Database
 {
     class LinkRecord
     {
-        //friend class LinkData;
     public:
         // constructors
         LinkRecord() = default;

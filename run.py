@@ -5,10 +5,9 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 from tkinter.ttk import *
-import xlwt, time
+import time
 import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
+import csv, filecmp, os
 
 def run(cmd, cin):
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -70,18 +69,16 @@ def makeResult(func, result):
 def getCurrentTime():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
 
-def writeToExcel(data):
-    workbook = xlwt.Workbook()
+def writeToCSV(data):
     name = ["init", "radixLSD", "radixMSD", "mergeLSD", "mergeMSD"]
-    for i in range(len(data)):
-        sheet = workbook.add_sheet(name[i])
-        for col in range(len(data[i][0])):
-            sheet.write(0, col, str(col))
-        for row in range(len(data[i])):
-            for col in range(len(data[i][row])):
-                sheet.write(row + 1, col, str(data[i][row][col]))
     now = getCurrentTime().replace(':', '-').replace(' ', '-')
-    workbook.save("result-%s.xls" % now)
+    path = "result-" + now
+    if not os.path.exists(path):
+        os.makedirs(path)
+    for i in range(len(name)):
+        with open(os.path.join(path, name[i] + ".csv"), "w", newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(data[i])
 
 def analyse(result):
     result = result.strip().split('\n')
@@ -199,73 +196,47 @@ class presentation(object):
         self.showResult.insert(END, ", ".join(result[5:]) + "\n")
         self.var.set("Finished!")
         self.root.update()
-        export = messagebox.askquestion("导出", "是否导出至 Excel？")
-        if export == 'yes':
-            writeToExcel(result[:5])
-            messagebox.showinfo(title="导出", message="导出成功！")
+        if int(rec) > 10000:
+            export = messagebox.askquestion("导出", "是否导出？")
+            if export == 'yes':
+                writeToCSV(result[:5])
+                messagebox.showinfo(title="导出", message="导出成功！")
+        else:
+            writeToCSV(result[:5])
 
     def analyse(self):
-        result = self.showResult.get("0.0", "end")
-        result = analyse(result)
-        for i in range(len(result)):
-            result[i] = max(0.001, result[i])
-        ratioLSD = result[2] / result[0]
-        ratioMSD = result[3] / result[1]
-        info = '''LSD Radix Sort Average Time: %.3fs
+        try:
+            result = self.showResult.get("0.0", "end")
+            result = analyse(result)
+            for i in range(len(result)):
+                result[i] = max(0.001, result[i])
+            info = '''LSD Radix Sort Average Time: %.3fs
 MSD Radix Sort Average Time: %.3fs
 LSD Merge Sort Average Time: %.3fs
-MSD Merge Sort Average Time: %.3fs
-LSD Radix Sort is %.1fx faster than LSD Merge Sort
-MSD Radix Sort is %.1fx faster than MSD Merge Sort''' % (result[0], result[1], \
-                                     result[2], result[3], ratioLSD, ratioMSD)
-        messagebox.showinfo(title='Analyse', message=info)
+MSD Merge Sort Average Time: %.3fs''' % tuple(result)
+            messagebox.showinfo(title='Analyse', message=info)
+        except:
+            pass
 
     def compare(self):
-        '''get from http://pbpython.com/excel-diff-pandas.html'''
-        # Define the diff function to show the changes in each field
-        def report_diff(x):
-            return x[0] if x[0] == x[1] else '{} ---> {}'.format(*x)
-
-        # We want to be able to easily tell which rows have changes
-        def has_change(row):
-            if "--->" in row.to_string():
-                return "Y"
-            else:
-                return "N"
-
-        file = getFilePath()
         self.var.set("Loading...")
-        self.root.update()
-        # Read in all excel files
-        df1 = pd.read_excel(file, 'radixLSD', na_values=['NA'])
-        df2 = pd.read_excel(file, 'mergeLSD', na_values=['NA'])
-        df3 = pd.read_excel(file, 'radixMSD', na_values=['NA'])
-        df4 = pd.read_excel(file, 'mergeMSD', na_values=['NA'])
-        self.var.set("Comparing radixLSD and mergeLSD...")
-        self.root.update()
-        # Create a panel of the two dataframes
-        diff_panel = pd.Panel(dict(df1=df1, df2=df2))
-        #Apply the diff function
-        diff_output = diff_panel.apply(report_diff, axis=0)
-        # Flag all the changes
-        diff_output['change'] = diff_output.apply(has_change, axis=1)
-        #Save the changes to excel but only include the columns we care about
-        diff_output[(diff_output.change == 'Y')].to_excel('1-2.xlsx', index=False)
-        self.var.set("Comparing radixLSD and radixMSD...")
-        self.root.update()
-        diff_panel = pd.Panel(dict(df1=df1, df2=df3))
-        diff_output = diff_panel.apply(report_diff, axis=0)
-        diff_output['change'] = diff_output.apply(has_change, axis=1)
-        diff_output[(diff_output.change == 'Y')].to_excel('1-3.xlsx', index=False)
-        self.var.set("Comparing radixLSD and mergeMSD...")
-        self.root.update()
-        diff_panel = pd.Panel(dict(df1=df1, df2=df4))
-        diff_output = diff_panel.apply(report_diff, axis=0)
-        diff_output['change'] = diff_output.apply(has_change, axis=1)
-        diff_output[(diff_output.change == 'Y')].to_excel('1-4.xlsx', index=False)
-        self.var.set("Finished!")
-        self.root.update()
-        messagebox.showinfo(title="比较", message="比较成功！")
+        file1 = getFilePath()
+        file2 = getFilePath()
+        try:
+            if filecmp.cmp(file1, file2):
+                self.var.set("Finished!")
+                messagebox.showinfo(title="比较", message="结果相同！")
+            else:
+                self.var.set("Finished!")
+                filename = 'differences.csv'
+                with open(file1) as f1, open(file2) as f2, open('different.csv', 'w') as f3:
+                    for x, y in zip(f1, f2):
+                        if x != y:
+                            f3.write(x)
+                messagebox.showinfo(title="比较", message="结果不同，已导出差异！")
+        except:
+            pass
+
 
     def trend(self):
         key = [1, 2, 5, 6, 8, 10, 12, 14, 17, 20, 25, 30, 40, 50]
