@@ -1,7 +1,6 @@
 #include "random.h"
 #include "database.h"
 #include <iostream>
-#include <ctime>
 #include <chrono>
 
 void printSplitForPy()
