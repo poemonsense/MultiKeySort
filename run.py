@@ -44,7 +44,7 @@ def makeResult(func, result):
 
     0 means no output result printed
     1 otherwise'''
-    splitStr = "Python"
+    splitStr = "*"
     if func == 0:
         result = result.split(splitStr)
         origin = make2DList(result[0])
@@ -286,14 +286,14 @@ MSD Merge Sort Average Time: %.3fs''' % tuple(result)
 
 
 
-if __name__ == "__main__":
-    class Struct(object): pass
-    data = Struct()
-    data.runtime = 0
-    data.cmd = getFilePath()
-    root = Tk()
-    root.title("多关键字排序 Multi-key Sort")
-    root.iconbitmap('ucas.ico')
-    presentation(root, data)
-    root.focus_set()
-    root.mainloop()
+# if __name__ == "__main__":
+class Struct(object): pass
+data = Struct()
+data.runtime = 0
+data.cmd = getFilePath()
+root = Tk()
+root.title("多关键字排序 Multi-key Sort")
+root.iconbitmap('ucas.ico')
+presentation(root, data)
+root.focus_set()
+root.mainloop()

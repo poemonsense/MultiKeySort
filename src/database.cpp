@@ -7,14 +7,14 @@
 
 namespace Database
 {
-    LinkRecord &LinkRecord::print()
+    MyRecord &MyRecord::print()
     {
         for (auto out: keys)
             std::cout << std::setw(3) << out << "  ";
         return *this;
     }
 
-    const LinkRecord &LinkRecord::print() const
+    const MyRecord &MyRecord::print() const
     {
         for (auto out: keys)
             std::cout << std::setw(3) << out << "  ";
@@ -24,12 +24,12 @@ namespace Database
 
 namespace Database
 {
-    int LinkData::getMid() const
+    int MyDatabase::getMid() const
     {
         return getMid(head, tail);
     }
 
-    int LinkData::getMid(int low, int high) const
+    int MyDatabase::getMid(int low, int high) const
     {
         std::vector<int> order;
         if (recnum != 0){
@@ -55,7 +55,7 @@ namespace Database
             return -1;
     }
 
-    LinkData &LinkData::print()
+    MyDatabase &MyDatabase::print()
     {
         if (!this->empty())
             for (int i = head; i != EMPTY_NEXT; i = records[i].getNext()){
@@ -65,7 +65,7 @@ namespace Database
         return *this;
     }
 
-    const LinkData &LinkData::print() const
+    const MyDatabase &MyDatabase::print() const
     {
         if (!this->empty())
             for (int i = head; i != EMPTY_NEXT; i = records[i].getNext()){
@@ -75,7 +75,7 @@ namespace Database
         return *this;
     }
 
-    std::vector<int> LinkData::getOrder() const
+    std::vector<int> MyDatabase::getOrder() const
     {
         std::vector<int> order;
         if (recnum != 0)
@@ -84,7 +84,7 @@ namespace Database
         return order;
     }
 
-    LinkData &LinkData::setOrder(const std::vector<int> &order)
+    MyDatabase &MyDatabase::setOrder(const std::vector<int> &order)
     {
         if (recnum != 0){
             head = order[0];
@@ -96,7 +96,7 @@ namespace Database
         return *this;
     }
 
-    LinkData &LinkData::resetOrder()
+    MyDatabase &MyDatabase::resetOrder()
     {
         if (recnum != 0){
             head = 0;
@@ -121,7 +121,7 @@ namespace Database
         return result;
     }
 
-    int getDigit(const LinkRecord &r, int key, int k)
+    int getDigit(const MyRecord &r, int key, int k)
     {
         return (r.getData(key) / intPower(NUM_BASE, k)) % NUM_BASE;
     }
@@ -139,7 +139,7 @@ namespace Database
         return len;
     }
 
-    LinkData &LinkData::mergeSort(int key, int low, int high, std::vector<int> &order)
+    MyDatabase &MyDatabase::mergeSort(unsigned key, int low, int high, std::vector<int> &order)
     // merge sort in order[low], order[high]
     {
         if (low < high) {
@@ -166,7 +166,7 @@ namespace Database
         return *this;
     }
 
-    LinkData &LinkData::mergeSort(int key)
+    MyDatabase &MyDatabase::mergeSort(unsigned key)
     {
         auto order = getOrder();
         mergeSort(key, 0, recnum - 1, order);
@@ -174,31 +174,31 @@ namespace Database
         return *this;
     }
 
-    LinkData &LinkData::mergeSort_LSD(const std::vector<unsigned> &priority)
+    MyDatabase &MyDatabase::mergeSort_LSD(const std::vector<unsigned> &priority)
     {
         for (auto i = priority.size(); i != 0;)
             mergeSort(priority[--i]);
         return *this;
     }
 
-    LinkData &LinkData::mergeSort_LSD()
+    MyDatabase &MyDatabase::mergeSort_LSD()
     {
         for (auto i = keynum; i != 0; )
             mergeSort(--i);
         return *this;
     }
 
-    LinkData &LinkData::mergeSort_MSD(const std::vector<unsigned> &priority)
+    MyDatabase &MyDatabase::mergeSort_MSD(const std::vector<unsigned> &priority)
     {
         return sort_MSD(0, priority);
     }
 
-    LinkData &LinkData::mergeSort_MSD()
+    MyDatabase &MyDatabase::mergeSort_MSD()
     {
         return sort_MSD(0);
     }
 
-    LinkData &LinkData::radixSort(int key, int low, int high, std::vector<int> &order)
+    MyDatabase &MyDatabase::radixSort(unsigned key, int low, int high, std::vector<int> &order)
     // radix sort in range(order[low], order[high])
     // sort by changing vector order
     // a helper function
@@ -220,7 +220,7 @@ namespace Database
         return *this;
     }
 
-    LinkData &LinkData::radixSort(int key)
+    MyDatabase &MyDatabase::radixSort(unsigned key)
     // radix sort according to keys[key]
     {
         auto order = getOrder();
@@ -229,14 +229,14 @@ namespace Database
         return *this;
     }
 
-    LinkData &LinkData::radixSort_LSD(const std::vector<unsigned> &priority)
+    MyDatabase &MyDatabase::radixSort_LSD(const std::vector<unsigned> &priority)
     {
         for (auto i = priority.size(); i != 0;)
             radixSort(priority[--i]);
         return *this;
     }
 
-    LinkData &LinkData::radixSort_LSD()
+    MyDatabase &MyDatabase::radixSort_LSD()
     // LSD radix sort
     {
         for (auto i = keynum; i != 0; )
@@ -244,18 +244,18 @@ namespace Database
         return *this;
     }
 
-    LinkData &LinkData::radixSort_MSD(const std::vector<unsigned> &priority)
+    MyDatabase &MyDatabase::radixSort_MSD(const std::vector<unsigned> &priority)
     {
         return sort_MSD(1, priority);
     }
 
-    LinkData &LinkData::radixSort_MSD()
+    MyDatabase &MyDatabase::radixSort_MSD()
     // MSD radix sort
     {
         return sort_MSD(1);
     }
 
-    LinkData &LinkData::sort_MSD(int type, const std::vector<unsigned> &priority)
+    MyDatabase &MyDatabase::sort_MSD(int type, const std::vector<unsigned> &priority)
     // type == 0: merge sort
     // type == 1: radix sort
     {
@@ -300,7 +300,7 @@ namespace Database
         return *this;
     }
 
-    LinkData &LinkData::sort_MSD(int type)
+    MyDatabase &MyDatabase::sort_MSD(int type)
     // type == 0: merge sort
     // type == 1: radix sort
     {

@@ -6,29 +6,29 @@
 namespace Database
 {
     typedef unsigned int KeyType;
-    const KeyType MAX_DATA_NUM = 256;
+    const KeyType MAX_DATA_NUM = 999;
     const KeyType NUM_BASE = 10;
     const int EMPTY_NEXT = -1;
 }
 
 namespace Database
 {
-    class LinkRecord
+    class MyRecord
     {
     public:
         // constructors
-        LinkRecord() = default;
-        LinkRecord(const std::vector<KeyType> &data): keys(data) { }
-        LinkRecord(const std::vector<KeyType> &data, int nextVal)
+        MyRecord() = default;
+        MyRecord(const std::vector<KeyType> &data): keys(data) { }
+        MyRecord(const std::vector<KeyType> &data, int nextVal)
             : keys(data), next(nextVal) { }
         // methods
         std::vector<KeyType> getData() const { return keys; }
         KeyType getData(int n) const { return keys[n]; }
         int getNext() const { return next; }
-        LinkRecord &setNext(unsigned pos) { next = pos; return *this; }
-        LinkRecord &setData(unsigned n, KeyType d) { keys[n] = d; return *this; }
-        const LinkRecord &print() const;
-        LinkRecord &print();
+        MyRecord &setNext(unsigned pos) { next = pos; return *this; }
+        MyRecord &setData(unsigned n, KeyType d) { keys[n] = d; return *this; }
+        const MyRecord &print() const;
+        MyRecord &print();
     private:
         std::vector<KeyType> keys;
         int next = EMPTY_NEXT;
@@ -38,76 +38,62 @@ namespace Database
 
 namespace Database
 {
-    class LinkData
+    class MyDatabase
     {
     public:
         // constructors
-        LinkData() = default;
-        LinkData(int key): keynum(key) { }
+        MyDatabase() = default;
+        MyDatabase(int key): keynum(key) { }
         // methods
         int getKeyNum() const { return keynum; }
         int getRecNum() const { return recnum; }
-        std::vector<LinkRecord> getData() const { return records; }
-        LinkRecord getData(int n) const { return records[n]; }
+        std::vector<MyRecord> getData() const { return records; }
+        MyRecord getData(int n) const { return records[n]; }
         int getHead() const { return head; }
         int getTail() const { return tail; }
         int getMid() const;
         int getMid(int, int) const;
         bool empty() const { return recnum == 0; }
-        LinkData &add(const std::vector<KeyType> &);
-        LinkData &setKeyNum(int);
-        LinkData &setHead(unsigned);
-        LinkData &setNext(unsigned, unsigned);
-        const LinkData &print() const;
-        LinkData &print();
-        LinkData &mergeSort_LSD();
-        LinkData &mergeSort_MSD();
-        LinkData &mergeSort(int);
-        LinkData &mergeSort_LSD(const std::vector<unsigned> &);
-        LinkData &mergeSort_MSD(const std::vector<unsigned> &);
-        LinkData &radixSort_LSD();
-        LinkData &radixSort_MSD();
-        LinkData &radixSort(int);
-        LinkData &radixSort_LSD(const std::vector<unsigned> &);
-        LinkData &radixSort_MSD(const std::vector<unsigned> &);
+        MyDatabase &add(const std::vector<KeyType> &);
+        MyDatabase &setKeyNum(int);
+        const MyDatabase &print() const;
+        MyDatabase &print();
+        MyDatabase &mergeSort_LSD();
+        MyDatabase &mergeSort_MSD();
+        MyDatabase &mergeSort(unsigned);
+        MyDatabase &mergeSort_LSD(const std::vector<unsigned> &);
+        MyDatabase &mergeSort_MSD(const std::vector<unsigned> &);
+        MyDatabase &radixSort_LSD();
+        MyDatabase &radixSort_MSD();
+        MyDatabase &radixSort(unsigned);
+        MyDatabase &radixSort_LSD(const std::vector<unsigned> &);
+        MyDatabase &radixSort_MSD(const std::vector<unsigned> &);
         std::vector<int> getOrder() const;
-        LinkData &setOrder(const std::vector<int> &);
-        LinkData &resetOrder();
+        MyDatabase &setOrder(const std::vector<int> &);
+        MyDatabase &resetOrder();
     private:
-        std::vector<LinkRecord> records;   // records
+        std::vector<MyRecord> records;   // records
         unsigned keynum = 0;               // number of keys
         unsigned recnum = 0;               // number of records
         int head = -1;
-        int tail = EMPTY_NEXT;
+        int tail = -1;
 
-        LinkData &mergeSort(int, int, int, std::vector<int> &);
-        LinkData &radixSort(int, int, int, std::vector<int> &);
-        LinkData &sort_MSD(int);
-        LinkData &sort_MSD(int, const std::vector<unsigned> &);
+        MyDatabase &mergeSort(unsigned, int, int, std::vector<int> &);
+        MyDatabase &radixSort(unsigned, int, int, std::vector<int> &);
+        MyDatabase &sort_MSD(int);
+        MyDatabase &sort_MSD(int, const std::vector<unsigned> &);
         KeyType getData(int n, int key) const { return records[n].getData(key); }
     };
 
-    inline LinkData &LinkData::setKeyNum(int num)
+    inline MyDatabase &MyDatabase::setKeyNum(int num)
     {
         keynum = num;
         return *this;
     }
 
-    inline LinkData &LinkData::setHead(unsigned index)
+    inline MyDatabase &MyDatabase::add(const std::vector<KeyType> &data)
     {
-        head = index;
-        return *this;
-    }
-
-    inline LinkData &LinkData::setNext(unsigned i, unsigned pos)
-    {
-        records[i].setNext(pos);
-        return *this;
-    }
-
-    inline LinkData &LinkData::add(const std::vector<KeyType> &data)
-    {
-        records.push_back(LinkRecord(data));
+        records.push_back(MyRecord(data));
         if (head == -1)
             head = tail = 0;
         else {
